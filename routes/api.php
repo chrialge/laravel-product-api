@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\API\ProductsController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,4 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::get('products', [ProductsController::class, 'index']);
+Route::apiResource('products', ProductController::class)->only(['index', 'show', 'destroy']);
