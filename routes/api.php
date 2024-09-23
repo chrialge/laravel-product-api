@@ -21,4 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::apiResource('products', ProductController::class)->only(['index', 'show', 'destroy']);
+Route::apiResource('products', ProductController::class);
