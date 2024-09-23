@@ -4,22 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Category;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Product extends Model
+
+class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'image', 'price', 'availability', 'color', 'description'];
+    protected $fillable = ['name', 'slug'];
+
 
     /**
-     * The categories that belong to the Product
+     * The products that belong to the Category
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function categories(): BelongsToMany
+    public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Product::class);
     }
 }
