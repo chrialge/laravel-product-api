@@ -25,7 +25,14 @@ class ProductSeeder extends Seeder
         for ($i = 0; $i < 100; $i++) {
             $newProduct = new Product();
             $newProduct->name = $faker->productName;
-            $newProduct->slug = Str::slug($newProduct->name, '-');
+            $check_slug = Product::where('name', $newProduct->name)->count();
+            $slug = "";
+            if ($check_slug > 0) {
+                $slug = Str::slug($newProduct->name, '-') . "-$check_slug";
+            } else {
+                $slug = Str::slug($newProduct->name, '-');
+            }
+            $newProduct->slug = $slug;
             $newProduct->image = $faker_prod->imageUrl(360, 360, $newProduct->name, true, $newProduct->slug, true, 'jpg');
             $newProduct->price = $faker_prod->randomFloat(2, 50, 1000);
             $newProduct->availability = rand(0, 1);
