@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Str;
-use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+
 
 class ProductController extends Controller
 {
@@ -38,20 +38,73 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-
-        $val_data = $request->validate([
+        // creo un validatore che mi controlla se la richiesta ha determinati campi
+        $validator = Validator::make($request->all(), [
             'name' => 'required|max:100',
             'image' => 'nullable|image',
-            'price' => 'required|between:0.00,99999.99',
+            'price' => 'required|numeric|between:0.00,999999.99',
             'availability' => 'nullable|boolean',
             'color' => 'nullable|max: 50',
             'description' => 'nullable|text'
+        ], [
+            'name.required' => 'required name',
+            'name.max' => 'the length of the name is :max',
+            'image.image' => 'accepted only file jpg, jpeg, png',
+            'price.required' => 'required price',
+            'price.between' => 'The :attribute value :input is not between :min - :max.',
+            'color.max' => 'the length of the color is :max',
+            'description.text' => 'description only acapted string'
         ]);
 
-        return response()->json([
-            'success' => 'true',
-            'response' => $val_data
-        ]);
+        // se ce un errore
+        if ($validator->fails()) {
+
+            // rispondo con gli errori di compilazione
+            return response()->json([
+                'success' => false,
+                'response' => $validator->errors(),
+            ]);
+        } else {
+
+            // salvo i dati validati
+            $val_data = $validator->validated();
+
+            // se passa il campo image 
+            if ($request->has('image')) {
+
+                // inserisco l'immagine nelo storage
+                $val_data['image'] = Storage::disk('public')->put('uploads/images', $val_data['image']);
+            }
+
+            // controllo se esistono prodotti con lo stesso nome
+            $check_slug = Product::where('name', $val_data['name'])->count();
+
+            // creao la variabile dello slug
+            $slug = "";
+
+            // se ce piu di uno
+            if ($check_slug > 0) {
+
+                // salvo lo slug custom
+                $slug = Str::slug($val_data['name'], '-') . "-$check_slug";
+            } else {
+
+                // salvo lo slug normale
+                $slug = Str::slug($val_data['name'], '-');
+            }
+
+            // salvo lo slug nella chiave slug
+            $val_data['slug'] = $slug;
+
+            // creo un nuovo prodotto
+            $newProduct = Product::create($val_data);
+
+            // rispondo con un messaggio di sucesso
+            return response()->json([
+                'success' => true,
+                'response' => "The $newProduct->name has been created successfully",
+            ]);
+        }
     }
 
     /**
@@ -70,6 +123,8 @@ class ProductController extends Controller
                 'response' => $product
             ]);
         } else {
+
+
             return response()->json([
                 'success' => false,
                 'response' => "the products don't exist"
@@ -82,16 +137,17 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // creo un check che controlla se esiste il prodotto
         $check_product = Product::where('id', $id)->exists();
 
+        // se esiste
         if ($check_product) {
-            $product = Product::where('id', $id)->first();
 
-
+            // creo un validatore che mi controlla se la richiesta ha determinati campi
             $validator = Validator::make($request->all(), [
                 'name' => 'required|max:100',
                 'image' => 'nullable|image',
-                'price' => 'required|between:0.00,99999.99',
+                'price' => 'required|numeric|between:0.00,999999.99',
                 'availability' => 'nullable|boolean',
                 'color' => 'nullable|max: 50',
                 'description' => 'nullable|text'
@@ -105,49 +161,58 @@ class ProductController extends Controller
                 'description.text' => 'description only acapted string'
             ]);
 
-
-
-
+            // se ce un errore
             if ($validator->fails()) {
+
+                // rispondo con gli errori di compilazione
                 return response()->json([
                     'success' => false,
                     'response' => $validator->errors(),
                 ]);
             } else {
 
+                // salvo i dati validati
                 $val_data = $validator->validated();
 
-
-
+                // se passa il campo image 
                 if ($request->has('image')) {
+
+                    // inserisco l'immagine nelo storage
                     $val_data['image'] = Storage::disk('public')->put('uploads/images', $val_data['image']);
                 }
 
+                // controllo se esistono prodotti con lo stesso nome
                 $check_slug = Product::where('name', $val_data['name'])->count();
+
+                // creao la variabile dello slug
                 $slug = "";
 
+                // se ce piu di uno
                 if ($check_slug > 0) {
+
+                    // salvo lo slug custom
                     $slug = Str::slug($val_data['name'], '-') . "-$check_slug";
                 } else {
+
+                    // salvo lo slug normale
                     $slug = Str::slug($val_data['name'], '-');
                 }
+
+                // salvo lo slug nella chiave slug
                 $val_data['slug'] = $slug;
 
-                // return response()->json([
-                //     'success' => true,
-                //     'response' =>  $val_data,
+                // creo un nuovo prodotto
+                $newProduct = Product::create($val_data);
 
-                // ]);
-
-                $product->update($val_data);
-
+                // rispondo con un messaggio di sucesso
                 return response()->json([
                     'success' => true,
-                    'response' =>  "the $product->name data have been successfully updated",
-
+                    'response' => "The $newProduct->name has been created successfully",
                 ]);
             }
         } else {
+
+            // comunica un messaggio per dire che non esiste il prodotto
             return response()->json([
                 'success' => false,
                 'response' => "the products don't exist"
