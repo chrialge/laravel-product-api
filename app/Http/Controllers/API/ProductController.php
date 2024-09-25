@@ -12,8 +12,24 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+
     /**
-     * Display a listing of the resource.
+     * @OA\Get(
+     *     path="/api/products",
+     *     summary= "response with all products",
+     *      tags = {"Products"},
+     *     @OA\Response(
+     *         response="200",
+     *         description="the list of products",
+     *         @OA\MediaType(
+     *              mediaType="application/json"
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response="404",
+     *         description="Not Found"
+     *     )
+     * )
      */
     public function index()
     {
@@ -41,17 +57,90 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+    /**
+     * @OA\Post(
+     *     path="/api/products",
+     *     summary= "create new product.",
+     *      tags = {"Products"},
+     * 
+     *      @OA\RequestBody(
+     *          
+     *          @OA\MediaType(
+     *              mediaType="multipart/form-data",
+     *              @OA\Schema(
+     *                  @OA\Property(
+     *                      property="name",
+     *                      type="string",
+     *                      example="Hammer",
+     *                      maxLength=100,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="image",
+     *                      type="string",
+     *                      format="binary"
+     *                  ),
+     *                  @OA\Property(
+     *                      property="price",
+     *                      type="number",
+     *                      maximum=99999.99,
+     *                      example=20.00,
+     *                      minimum=0.00,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="availability",
+     *                      type="number",
+     *                      minimum=0,
+     *                      maximum=1,
+     *                      example=1,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="color",
+     *                      type="string",
+     *                      example="red",
+     *                      maxLength=50,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="description",
+     *                      example="there is functional hammer",
+     *                      type="string",
+     *                  ),
+     *                  @OA\Property(
+     *                      property="category_id",
+     *                      type="object",
+     *                      example={1,2,3,4,5}
+     *                              
+     *                  ),
+     *              ),
+     *      ),
+     *      ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="uptade of the product",
+     *         @OA\MediaType(
+     *              mediaType="application/json"
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response="404",
+     *         description="find anythings"
+     *     )
+     * )
+     */
+
+
+
     public function store(Request $request)
     {
         // creo un validatore che mi controlla se la richiesta ha determinati campi
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:100',
-            'image' => 'nullable|image',
+            'image' => 'nullable|file',
             'price' => 'required|numeric|between:0.00,999999.99',
             'availability' => 'nullable|boolean',
-            'highlighted' => 'nullable|boolean',
             'color' => 'nullable|max: 50',
-            'description' => 'nullable|text'
+            'description' => 'nullable|string',
+            'category_id' => 'nullable'
         ], [
             'name.required' => 'required name',
             'name.max' => 'the length of the name is :max',
@@ -61,6 +150,7 @@ class ProductController extends Controller
             'color.max' => 'the length of the color is :max',
             'description.text' => 'description only acapted string'
         ]);
+
 
         // se ce un errore
         if ($validator->fails()) {
@@ -75,8 +165,14 @@ class ProductController extends Controller
             // salvo i dati validati
             $val_data = $validator->validated();
 
+            // catturo las tringa e la trasformo in una stringa
+            $val_data['category_id'] = explode(",", $val_data['category_id']);
+
+
+
+
             // se passa il campo image 
-            if ($request->has('image')) {
+            if (isset($val_data['image'])) {
 
                 // inserisco l'immagine nelo storage
                 $val_data['image'] = Storage::disk('public')->put('uploads/images', $val_data['image']);
@@ -105,16 +201,52 @@ class ProductController extends Controller
             // creo un nuovo prodotto
             $newProduct = Product::create($val_data);
 
+
+            // se passa le categorie
+            if ($request->has('category_id')) {
+
+                // ciclo per tutte le categorie
+                foreach ($val_data['category_id'] as $category) {
+                    // creo nuovi record nella tabella pivot
+                    $newProduct->categories()->attach($category);
+                }
+            }
+
             // rispondo con un messaggio di sucesso
             return response()->json([
                 'success' => true,
-                'response' => "The $newProduct->name has been created successfully",
+                'response' => $val_data,
             ]);
         }
     }
 
     /**
      * Display the specified resource.
+     */
+
+    /**
+     * @OA\Get(
+     *     path="/api/products/{id}",
+     *     summary= "response with all products",
+     *      tags = {"Products"},
+     *     @OA\Parameter( 
+     *          name = "id",
+     *          in = "path",
+     *          description = "id product",
+     *          required = true,
+     *         ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="single product",
+     *         @OA\MediaType(
+     *              mediaType="application/json"
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response="404",
+     *         description="Not Found"
+     *     )
+     * )
      */
     public function show(string $id)
     {
@@ -146,10 +278,89 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
+
+    /**
+     * @OA\Put(
+     *     path="/api/products/{id}",
+     *     summary= "modify single product.",
+     *      tags = {"Products"},
+     *      @OA\Parameter( 
+     *          name = "id",
+     *          in = "path",
+     *          description = "id of the product",
+     *          required = true,
+     *      ),
+     *      @OA\RequestBody(
+     *          @OA\MediaType(
+     *              mediaType="application/x-www-form-urlencoded",
+     *              encoding="image",
+     *              @OA\Schema(
+     *                  @OA\Property(
+     *                      property="name",
+     *                      type="string",
+     *                      example="Hammer",
+     *                      maxLength=100,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="image",
+     *                      type="string",
+     *                      format="binary"
+     *                  ),
+     *                  @OA\Property(
+     *                      property="price",
+     *                      type="number",
+     *                      maximum=99999.99,
+     *                      example=20.00,
+     *                      minimum=0.00,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="availability",
+     *                      type="number",
+     *                      minimum=0,
+     *                      maximum=1,
+     *                      example=1,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="color",
+     *                      type="string",
+     *                      example="red",
+     *                      maxLength=50,
+     *                  ),
+     *                  @OA\Property(
+     *                      property="description",
+     *                      example="there is functional hammer",
+     *                      type="string",
+     *                  ),
+     *                  @OA\Property(
+     *                      property="category_id",
+     *                      type="object",
+     *                      example={1,2,3,4,5}
+     *                              
+     *                  ),
+     *              ),
+     *      ),
+     *      ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="uptade of the product",
+     *         @OA\MediaType(
+     *              mediaType="application/json"
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response="404",
+     *         description="Not Found"
+     *     )
+     * )
+     */
+
     public function update(Request $request, string $id)
     {
         // creo un check che controlla se esiste il prodotto
         $check_product = Product::where('id', $id)->exists();
+
+
+        $product = Product::where('id', $id)->first();
 
         // se esiste
         if ($check_product) {
@@ -157,12 +368,13 @@ class ProductController extends Controller
             // creo un validatore che mi controlla se la richiesta ha determinati campi
             $validator = Validator::make($request->all(), [
                 'name' => 'required|max:100',
-                'image' => 'nullable|image',
+                'image' => 'nullable',
                 'price' => 'required|numeric|between:0.00,999999.99',
                 'availability' => 'nullable|boolean',
                 'highlighted' => 'nullable|boolean',
                 'color' => 'nullable|max: 50',
-                'description' => 'nullable|text'
+                'description' => 'nullable|string',
+                'category_id' => 'nullable'
             ], [
                 'name.required' => 'required name',
                 'name.max' => 'the length of the name is :max',
@@ -170,8 +382,11 @@ class ProductController extends Controller
                 'price.required' => 'required price',
                 'price.between' => 'The :attribute value :input is not between :min - :max.',
                 'color.max' => 'the length of the color is :max',
-                'description.text' => 'description only acapted string'
+                'description.text' => 'description only acapted string',
+
             ]);
+            // rispondo con un messaggio di sucesso
+
 
             // se ce un errore
             if ($validator->fails()) {
@@ -183,15 +398,27 @@ class ProductController extends Controller
                 ]);
             } else {
 
+
+
                 // salvo i dati validati
                 $val_data = $validator->validated();
 
+
+
+
                 // se passa il campo image 
-                if ($request->has('image')) {
+                if (isset($val_data['image'])) {
+
+                    $val_data['image'] = base64_encode($val_data['image']);
+                    if ($product->image) {
+                        Storage::disk('public')->delete($product->image);
+                        $val_data['image'] = Storage::disk('public')->put('uploads/images', $val_data['image']);
+                    }
 
                     // inserisco l'immagine nelo storage
                     $val_data['image'] = Storage::disk('public')->put('uploads/images', $val_data['image']);
                 }
+
 
                 // controllo se esistono prodotti con lo stesso nome
                 $check_slug = Product::where('name', $val_data['name'])->count();
@@ -212,20 +439,31 @@ class ProductController extends Controller
 
                 // salvo lo slug nella chiave slug
                 $val_data['slug'] = $slug;
+                $categories = '';
 
-                // creo un nuovo prodotto
+                if (isset($val_data['category_id'])) {
+                    $val_data['category_id'] = explode(",", $val_data['category_id']);
+                    $categories = $val_data['category_id'];
+                    unset($val_data['category_id']);
+                };
+
+
+                // aggiorna il prodotto
                 Product::where('id', $id)->update($val_data);
 
                 // il nuovo prodotto
-                $newProduct = Product::where('id', $id)->get();
+                $newProduct = Product::where('id', $id)->first();
 
 
-
-
-                // rispondo con un messaggio di sucesso
+                if ($categories) {
+                    $newProduct->categories()->detach();
+                    foreach ($categories as $category) {
+                        $newProduct->categories()->attach($category);
+                    }
+                }
                 return response()->json([
                     'success' => true,
-                    'response' => "the product has been updated in $newProduct->name",
+                    'response' => "the $newProduct->name has been updated!",
                 ]);
             }
         } else {
@@ -240,6 +478,31 @@ class ProductController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     */
+
+    /**
+     * @OA\Delete(
+     *     path="/api/products/{id}",
+     *     summary= "response with all products",
+     *      tags = {"Products"},
+     *     @OA\Parameter( 
+     *          name = "id",
+     *          in = "path",
+     *          description = "id of the product",
+     *          required = true,
+     *         ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="message of success",
+     *         @OA\MediaType(
+     *              mediaType="application/json"
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response="404",
+     *         description="Not Found"
+     *     )
+     * )
      */
     public function destroy(string $id)
     {

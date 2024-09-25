@@ -1,0 +1,307 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "APIs For Products",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/products/highlighted/{highlighted}": {
+            "get": {
+                "tags": [
+                    "Search"
+                ],
+                "summary": "response products highlighted",
+                "operationId": "9906a10e4f6faf2f9cc080176de0cf26",
+                "parameters": [
+                    {
+                        "name": "highlighted",
+                        "in": "path",
+                        "description": " category id or name",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "prducts with this category",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "response with all products",
+                "operationId": "ab015cc2055ac75e6d23c628675c26e7",
+                "responses": {
+                    "200": {
+                        "description": "the list of products",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "create new product.",
+                "operationId": "7ff81b1681ff3180e5b73a2e15f2c67b",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Hammer"
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "maximum": 99999.99,
+                                        "minimum": 0,
+                                        "example": 20
+                                    },
+                                    "availability": {
+                                        "type": "number",
+                                        "maximum": 1,
+                                        "minimum": 0,
+                                        "example": 1
+                                    },
+                                    "color": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "red"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "there is functional hammer"
+                                    },
+                                    "category_id": {
+                                        "type": "object",
+                                        "example": [
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "uptade of the product",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "find anythings"
+                    }
+                }
+            }
+        },
+        "/api/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "response with all products",
+                "operationId": "47affec446a4e21ba3cbf0b6b14abb44",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id product",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "single product",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "modify single product.",
+                "operationId": "b0605b594dede1c8d6d6412b452efd96",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of the product",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Hammer"
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "maximum": 99999.99,
+                                        "minimum": 0,
+                                        "example": 20
+                                    },
+                                    "availability": {
+                                        "type": "number",
+                                        "maximum": 1,
+                                        "minimum": 0,
+                                        "example": 1
+                                    },
+                                    "color": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "red"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "there is functional hammer"
+                                    },
+                                    "category_id": {
+                                        "type": "object",
+                                        "example": [
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "encoding": "image"
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "uptade of the product",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "response with all products",
+                "operationId": "33173a96c7ab5ed4ba9ceaffb4c6003d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of the product",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "message of success",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/api/products/categories/{search}": {
+            "get": {
+                "tags": [
+                    "Search"
+                ],
+                "summary": "response of the product with category id or name to give",
+                "operationId": "32deec95353e4bab8dc09eb98646b4f2",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "path",
+                        "description": " category id or name",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "prducts with this category",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "name": "bearerAuth",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Search",
+            "description": "Search"
+        },
+        {
+            "name": "Products",
+            "description": "Products"
+        }
+    ]
+}

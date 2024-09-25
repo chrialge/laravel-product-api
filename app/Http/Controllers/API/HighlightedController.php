@@ -8,6 +8,30 @@ use App\Http\Controllers\Controller;
 
 class HighlightedController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/products/highlighted/{highlighted}",
+     *     summary= "response products highlighted",
+     *      tags = {"Search"},
+     *     @OA\Parameter( 
+     *          name = "highlighted",
+     *          in = "path",
+     *          description = " category id or name",
+     *          required = true,
+     *         ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="prducts with this category",
+     *         @OA\MediaType(
+     *              mediaType="application/json"
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response="404",
+     *         description="Not Found"
+     *     )
+     * )
+     */
     public function index(string $highlighted)
     {
 
