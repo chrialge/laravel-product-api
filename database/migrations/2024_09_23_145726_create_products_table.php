@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->float('price', 8, 2);
             $table->tinyInteger('availability')->default(0);
+            $table->tinyInteger('highlighted')->default(0);
             $table->string('color', 50)->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
