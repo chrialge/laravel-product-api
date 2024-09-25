@@ -4,6 +4,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\HighlightedController;
+use App\Http\Controllers\API\SearchProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,3 +24,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::apiResource('products', ProductController::class);
+
+Route::get('products/categories/{search}', [SearchProductController::class, 'search']);
+
+Route::get('products/highlighted/{highlighted}', [HighlightedController::class, 'index']);
