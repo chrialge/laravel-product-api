@@ -227,7 +227,7 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *     path="/api/products/{id}",
-     *     summary= "response with all products",
+     *     summary= "response with the product",
      *      tags = {"Products"},
      *     @OA\Parameter( 
      *          name = "id",
@@ -282,7 +282,7 @@ class ProductController extends Controller
     /**
      * @OA\Put(
      *     path="/api/products/{id}",
-     *     summary= "modify single product.",
+     *     summary= "update the product.",
      *      tags = {"Products"},
      *      @OA\Parameter( 
      *          name = "id",
@@ -483,7 +483,7 @@ class ProductController extends Controller
     /**
      * @OA\Delete(
      *     path="/api/products/{id}",
-     *     summary= "response with all products",
+     *     summary= "delete the product",
      *      tags = {"Products"},
      *     @OA\Parameter( 
      *          name = "id",
