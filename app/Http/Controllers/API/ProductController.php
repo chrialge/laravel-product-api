@@ -17,15 +17,20 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('categories')->get();
+        // salvoo i prodotti e le sue categorie
+        $products = Product::with('categories')->orderByDesc('id')->get();
 
+        // se ha piu di zero risultati
         if (count($products) > 0) {
 
+            // return di una risposta con i prodotti
             return response()->json([
                 'success' => true,
                 'response' => $products,
             ]);
         } else {
+
+            // return di una risposta negativa
             return response()->json([
                 'success' => false,
                 'response' => '404 Sorry nothing found'
@@ -44,6 +49,7 @@ class ProductController extends Controller
             'image' => 'nullable|image',
             'price' => 'required|numeric|between:0.00,999999.99',
             'availability' => 'nullable|boolean',
+            'highlighted' => 'nullable|boolean',
             'color' => 'nullable|max: 50',
             'description' => 'nullable|text'
         ], [
@@ -115,16 +121,21 @@ class ProductController extends Controller
 
         // controlle se l'id esiste per product 
         $check_product = Product::where('id', $id)->exists();
-        if ($check_product) {
-            $product = Product::where('id', $id)->with('categories')->get();
 
+        // se esiste il prodotto
+        if ($check_product) {
+
+            // salvo il prodotto
+            $product = Product::where('id', $id)->with('categories')->first();
+
+            // rispondo con il prodotto
             return response()->json([
                 'success' => true,
                 'response' => $product
             ]);
         } else {
 
-
+            // rispondo che il prodotto non esiste
             return response()->json([
                 'success' => false,
                 'response' => "the products don't exist"
@@ -149,6 +160,7 @@ class ProductController extends Controller
                 'image' => 'nullable|image',
                 'price' => 'required|numeric|between:0.00,999999.99',
                 'availability' => 'nullable|boolean',
+                'highlighted' => 'nullable|boolean',
                 'color' => 'nullable|max: 50',
                 'description' => 'nullable|text'
             ], [
@@ -202,12 +214,18 @@ class ProductController extends Controller
                 $val_data['slug'] = $slug;
 
                 // creo un nuovo prodotto
-                $newProduct = Product::create($val_data);
+                Product::where('id', $id)->update($val_data);
+
+                // il nuovo prodotto
+                $newProduct = Product::where('id', $id)->get();
+
+
+
 
                 // rispondo con un messaggio di sucesso
                 return response()->json([
                     'success' => true,
-                    'response' => "The $newProduct->name has been created successfully",
+                    'response' => "the product has been updated in $newProduct->name",
                 ]);
             }
         } else {
@@ -229,17 +247,23 @@ class ProductController extends Controller
         // controlle se l'id esiste per product 
         $check_product = Product::where('id', $id)->exists();
 
+        // se esiste
         if ($check_product) {
 
+            // prendo il singolo prodotto
             $product = Product::where('id', $id)->first();
 
+            // cancello il prodotto
             $product->delete();
 
+            // rispondo con un messaggio di comferma
             return response()->json([
                 'success' => true,
                 'response' => "has been deleted successfully $product->name"
             ]);
         } else {
+
+            // rispondo che il prodotto non esiste
             return response()->json([
                 'success' => false,
                 'response' => "the products don't exist"
